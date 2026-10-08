@@ -2,7 +2,7 @@
 
 ## Alcance
 
-**Proyecto:** SO-Sim, simulador educativo de un sistema operativo.
+**Proyecto:** SO-Sim — SuperAlmacén, simulador educativo de un sistema operativo.
 
 **Curso:** SW407 — Sistemas Operativos, según el documento del proyecto.
 
@@ -16,6 +16,13 @@ el equipo. Las pruebas y el código del repositorio no sustituyen la evidencia
 de participación individual que solicita la rúbrica.
 
 ## Elección de lenguajes
+
+El caso común es el [almacén de un supermercado](caso_superalmacen.md).
+Los procesos representan órdenes de trabajo; los hilos cuentan sectores de una
+misma orden y el búfer es la zona donde recepción y ubicación intercambian cajas.
+La mesa de preparación de pedidos representará la RAM en la etapa de memoria.
+El caso documenta también E/S, archivos, seguridad y comunicación entre sucursales;
+esas etapas todavía no forman parte de la implementación.
 
 - C permite observar `fork`, `execvp` y `waitpid` directamente.
 - Python facilita escribir los pasos de cada algoritmo y mostrar sus datos.
@@ -56,12 +63,13 @@ so-sim/
     main.py                  Menú y comandos
     entrada.py               Validación y lectura de las cuatro columnas
     modelos.py               Datos, tramos de CPU y métricas
+    evaluacion.py            Porcentajes de atención y reducción de tiempos
     planificacion/
       fcfs.py                Orden de llegada
       sjf.py                 Menor duración disponible
       prioridad.py           Mayor prioridad disponible
       round_robin.py         Cola de listos y quantum
-    hilos.py                 Creación y finalización de hilos
+    hilos.py                 Conteo por sectores y comparación de tiempos
     sincronizacion.py        Búfer circular y productor-consumidor
     presentacion.py           Tablas, trazas y comparación
   data/processes/             Ejemplos CSV

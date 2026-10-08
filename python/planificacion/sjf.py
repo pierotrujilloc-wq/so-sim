@@ -1,4 +1,7 @@
-"""SJF sin desalojo: elige la menor duración entre los procesos disponibles."""
+"""SJF sin desalojo: elige la menor duración entre los procesos disponibles.
+
+En SuperAlmacén, el operario elige la orden más corta que ya llegó.
+"""
 
 from modelos import Proceso, Resultado, Tramo, construir_resultado, validar_procesos
 

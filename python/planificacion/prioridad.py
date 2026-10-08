@@ -1,4 +1,8 @@
-"""Prioridad sin desalojo: el número más pequeño tiene mayor prioridad."""
+"""Prioridad sin desalojo: el número más pequeño tiene mayor prioridad.
+
+En SuperAlmacén, se elige la orden más urgente entre las disponibles.
+Una verificación urgente espera si el operario ya está atendiendo otra orden.
+"""
 
 from modelos import Proceso, Resultado, Tramo, construir_resultado, validar_procesos
 

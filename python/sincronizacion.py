@@ -1,5 +1,7 @@
 """Productor-consumidor con un búfer circular, semáforos y un mutex.
 
+SuperAlmacén: recepción coloca cajas y ubicación las retira. El búfer
+representa las posiciones limitadas de la zona de recepción.
 No se usa queue.Queue: las posiciones, la ocupación y la coordinación
 se gestionan aquí para poder estudiar cada operación.
 """
@@ -84,7 +86,7 @@ def consumir(buffer: BufferLimitado) -> None:
         # None es una señal de fin. No representa un elemento de trabajo.
         if elemento is None:
             return
-        # En este ejemplo retirar el elemento representa su procesamiento.
+        # Retirar la caja representa entregarla al operario de ubicación.
 
 
 def ejecutar_productor_consumidor(

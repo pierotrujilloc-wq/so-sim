@@ -1,12 +1,12 @@
 # Validación de los módulos 1 y 2
 
-## Resultado de la comprobación inicial
+## Resultado de la comprobación de SuperAlmacén
 
-- Windows con Python 3.13: las 20 pruebas pasaron.
-- Ubuntu en WSL: las mismas 20 pruebas pasaron.
+- Windows con Python 3.13: las 30 pruebas pasaron.
+- Ubuntu en WSL: las mismas 30 pruebas pasaron.
 - C en Ubuntu WSL: compiló con `-Wall -Wextra -Werror` y terminó con código 0.
   Se observó un PID diferente para padre e hijo, conservación del PID del
-  hijo al ejecutar `execvp` y suma final igual a 15.
+  hijo al ejecutar `execvp`, suma final igual a 15 y tabla de cumplimiento.
 
 ## Suite automatizada
 
@@ -16,7 +16,7 @@ Ejecutar desde la raíz:
 python3 -m unittest discover -s tests -v
 ```
 
-La suite contiene 20 pruebas, algunas con varios escenarios internos.
+La suite contiene 30 pruebas, algunas con varios escenarios internos.
 
 | Área | Evidencia |
 |---|---|
@@ -30,6 +30,10 @@ La suite contiene 20 pruebas, algunas con varios escenarios internos.
 | Hilos | Cuatro sumas correctas, eventos de inicio anteriores al fin y espera de terminación. |
 | Sincronización | Búfer de capacidad 1, productores y consumidores múltiples, cero elementos y consumidores sobrantes. |
 | Consola | Comando predeterminado, error de archivo y carga manual mediante el menú. |
+| Porcentajes | Eficiencia y espera complementarias, mejora y empeoramiento frente a FCFS, referencia cero y ausencia de FCFS. |
+| Comparación por proceso | Porcentajes de P3 calculados a mano y conservación de empates entre algoritmos. |
+| Tiempos de hilos | Reloj controlado en una prueba para distinguir tiempo de tarea y tiempo total con gestión; nunca se presupone un ganador real. |
+| Contexto | Órdenes del ejemplo, conteo de unidades, zona de recepción y recorrido de las opciones 4, 5 y 6 de SuperAlmacén. |
 
 En los casos generados se verifica que cada proceso ejecuta exactamente su
 duración, nunca comienza antes de llegar, no hay huecos ocultos entre tramos,
@@ -57,6 +61,7 @@ Resultados esperados:
 - El PID del hijo es el mismo antes y después de `execvp`.
 - La suma calculada es 15.
 - El padre recoge el código de salida 0 mediante `waitpid`.
+- La tabla identifica roles y PID y muestra 100% de cumplimiento de cada tarea.
 
 ## Límites
 

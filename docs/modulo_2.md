@@ -4,12 +4,18 @@ Archivo principal: `python/sincronizacion.py`.
 
 ## Problema
 
+En [SuperAlmacén](caso_superalmacen.md), los productores son operarios de
+recepción, los consumidores son operarios de ubicación y el búfer es una zona
+limitada de recepción de cajas. La opción 5 utiliza estos nombres junto con
+sus equivalentes técnicos para facilitar la exposición. La mesa de preparación
+de pedidos se reserva como metáfora de la RAM para el futuro módulo 3.
+
 Varios productores generan elementos y varios consumidores los retiran de un
 búfer con capacidad limitada. Los productores deben esperar cuando se llena,
 y los consumidores cuando está vacío. Solo un hilo puede modificar su estado
 a la vez.
 
-Cada elemento tiene un identificador como `P1-item01`. Esto permite verificar
+Cada caja tiene un identificador como `P1-item01`. Esto permite verificar
 que se retira exactamente una vez. Estos identificadores corresponden a los
 productores; no son los procesos del CSV del planificador.
 

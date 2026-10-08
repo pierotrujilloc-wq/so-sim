@@ -1,4 +1,5 @@
 /*
+ * SuperAlmacén: jefe del almacén (padre) y operario (hijo).
  * Módulo 1: creación, sustitución y terminación de un proceso en Linux/WSL.
  * fork crea un hijo; exec reemplaza su programa; waitpid recoge su estado.
  */
@@ -22,9 +23,11 @@ int main(int argc, char *argv[]) {
             suma += numero;
         }
         printf("Hijo: suma de 1 a 5 = %d. Finaliza correctamente.\n", suma);
+        printf("Operario: entrega de 5 cajas con 1 a 5 unidades, %d unidades en total.\n", suma);
         return EXIT_SUCCESS;
     }
 
+    puts("SuperAlmacen: contar productos de una entrega del supermercado.");
     printf("Padre: PID=%ld. Creará un proceso hijo.\n", (long)getpid());
     /* Evita duplicar texto pendiente en el búfer de salida al hacer fork. */
     fflush(stdout);
@@ -48,6 +51,7 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Padre: espera al hijo PID=%ld mediante waitpid.\n", (long)hijo);
+    fflush(stdout);
     int estado;
     pid_t terminado;
     do {
@@ -61,6 +65,15 @@ int main(int argc, char *argv[]) {
     if (WIFEXITED(estado)) {
         int codigo = WEXITSTATUS(estado);
         printf("Padre: hijo terminado con código %d.\n", codigo);
+        puts("\nComparacion de responsabilidades y cumplimiento:");
+        printf("%-12s | %-8s | %-24s | %s\n", "Proceso", "PID", "Responsabilidad", "Cumplimiento");
+        printf("%-12s | %-8ld | %-24s | 100.00%% (1/1)\n",
+               "Padre", (long)getpid(), "Recoger estado del hijo");
+        printf("%-12s | %-8ld | %-24s | %.2f%% (%d/1)\n",
+               "Hijo", (long)hijo, "Contar una entrega",
+               codigo == 0 ? 100.0 : 0.0, codigo == 0 ? 1 : 0);
+        puts("Cumplimiento = tareas completadas / asignadas x 100.");
+        puts("Padre e hijo tienen tareas distintas; esta tabla mide cumplimiento.");
         return codigo;
     }
     if (WIFSIGNALED(estado)) {

@@ -1,9 +1,45 @@
-# SO-Sim — Módulos 1 y 2
+# SO-Sim — SuperAlmacén — Módulos 1 y 2
 
 Simulador educativo para el curso de Sistemas Operativos. Incluye procesos
 en C, hilos en Python, cuatro algoritmos de planificación y el problema
 productor-consumidor. La interfaz es por consola y los algoritmos están
 escritos con listas, ciclos y condiciones para facilitar su explicación.
+
+## Caso práctico: almacén de un supermercado
+
+**SuperAlmacén** recibe mercadería, cuenta cajas y atiende órdenes de reposición.
+El jefe representa al sistema operativo; un operario representa la CPU y cada
+proceso es una orden de trabajo. Los hilos cuentan distintos sectores de una
+misma orden. Recepción y ubicación comparten una zona limitada de cajas.
+El contexto completo está en [Caso SuperAlmacén](docs/caso_superalmacen.md).
+
+- **Opciones 1–3:** Gantt y tablas con eficiencia temporal por proceso
+  (`Duración / Retorno × 100`), porcentaje de espera y reducción de espera y
+  respuesta frente a FCFS. Se indican las mejores políticas y los empates.
+- **Opción 4:** tabla por hilo y comparación de la misma orden contada de forma
+  secuencial y con hilos, con tiempos reales y reducción porcentual.
+- **Opción 5:** recepción y retirada de cajas de la zona compartida.
+- **Opción 6:** instrucciones para ejecutar el jefe y operario en C;
+  el ejecutable muestra una tabla de roles, PID y cumplimiento.
+
+La eficiencia temporal depende de llegada y duración; compara atención frente
+a espera. Las mediciones de hilos son puntuales y pueden variar. Un porcentaje
+negativo de reducción indica que se tardó más que la referencia.
+
+### Continuidad del proyecto
+
+Los módulos 1 y 2 son ejecutables. El mismo caso se extenderá, cuando se
+implemente cada etapa, a:
+
+| Módulo futuro | Metáfora |
+|---|---|
+| 3. Gestión de memoria | Mesa de preparación de pedidos: reservar y liberar espacio temporal; casilleros y fichas para paginación. |
+| 4. E/S y archivos | Equipos de lectura y traslado; registros guardados en bloques del archivo. |
+| 5. Seguridad | Identificación, permisos por rol y cifrado de reportes. |
+| 6. Sistemas distribuidos | Almacenes de distintas sucursales que intercambian mensajes. |
+
+La mesa de preparación representa la RAM y la zona de recepción representa el
+búfer de sincronización. Sus funciones se explican por separado en el caso.
 
 ## Requisitos
 
@@ -71,7 +107,7 @@ python3 python/main.py sincronizar --productores 2 --consumidores 2 --capacidad 
 ```
 
 En Windows, reemplaza `python3 python/main.py` por `.\ejecutar.bat`.
-`--elementos` es la cantidad que produce **cada productor**.
+`--elementos` es la cantidad de cajas que ingresa **cada operario de recepción**.
 
 ### Procesos en C
 
@@ -145,6 +181,7 @@ en subprocesos con un límite de 15 segundos para detectar bloqueos.
 2. [Módulo 1](docs/modulo_1.md): procesos, hilos, algoritmos, fórmulas y resultados.
 3. [Módulo 2](docs/modulo_2.md): búfer circular, semáforos, mutex y cierre.
 4. [Validación](docs/validacion.md): casos comprobados y límites de las pruebas.
+5. [Caso SuperAlmacén y porcentajes](docs/caso_superalmacen.md): contexto de los seis módulos y cómo interpretar las tablas.
 
 Cada planificador tiene su propio archivo en `python/planificacion/`. La
 lectura de datos, el cálculo de métricas y la presentación están separados

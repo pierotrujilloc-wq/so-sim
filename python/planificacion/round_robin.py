@@ -1,4 +1,8 @@
-"""Round Robin: turnos de CPU de hasta quantum unidades."""
+"""Round Robin: turnos de CPU de hasta quantum unidades.
+
+En SuperAlmacén, el operario guarda el avance de una orden al acabar su turno
+y pasa a la siguiente. Se supone que las tareas se pueden pausar y continuar.
+"""
 
 from modelos import (
     Proceso, Resultado, Tramo, construir_resultado,

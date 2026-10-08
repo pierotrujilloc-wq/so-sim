@@ -65,7 +65,7 @@ class PruebasConcurrencia(unittest.TestCase):
         self.assertEqual(resultado["resultados"], [5050] * 4)
         for numero in range(1, 5):
             inicio = resultado["eventos"].index(f"Hilo-{numero}: inicio")
-            fin = resultado["eventos"].index(f"Hilo-{numero}: fin, suma = 5050")
+            fin = resultado["eventos"].index(f"Hilo-{numero}: fin, unidades = 5050")
             self.assertLess(inicio, fin)
 
     def test_configuracion_invalida(self):

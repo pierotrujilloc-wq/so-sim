@@ -1,4 +1,7 @@
-"""FCFS: atiende por orden de llegada, sin desalojar procesos."""
+"""FCFS: atiende por orden de llegada, sin desalojar procesos.
+
+En SuperAlmacén, el operario completa las órdenes según su recepción.
+"""
 
 from modelos import Proceso, Resultado, Tramo, construir_resultado, validar_procesos
 

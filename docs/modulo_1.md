@@ -1,5 +1,10 @@
 # Módulo 1: procesos, hilos y planificación
 
+Caso común: [SuperAlmacén](caso_superalmacen.md).
+Un operario representa la CPU y cada proceso de entrada una orden de trabajo.
+La leyenda del ejemplo identifica conteo, reposición, refrigerados, clasificación
+y etiquetas sin agregar campos a las cuatro columnas de entrada.
+
 ## 1. Procesos en C
 
 Archivo: `c/procesos.c`.
@@ -10,8 +15,10 @@ Archivo: `c/procesos.c`.
 3. El hijo llama a `execvp` para ejecutar el mismo programa con `--hijo`.
    Reutilizar el ejecutable permite ver el reemplazo sin depender de otro
    programa instalado. El PID del hijo se conserva y `main` comienza otra vez.
-4. La rama `--hijo` calcula la suma de 1 a 5 y termina con código cero.
+4. La rama `--hijo` cuenta cinco cajas con 1 a 5 unidades de producto:
+   completa el conteo de 15 unidades y termina con código cero.
 5. El padre llama a `waitpid` para esperar y recoger el estado de salida.
+6. Presenta una tabla del jefe y operario con PID y cumplimiento.
 
 `execvp` es una variante de la familia `exec`; `waitpid` permite esperar al
 hijo concreto. Una llamada correcta a `execvp` no vuelve a la instrucción
@@ -32,6 +39,13 @@ Un mutex protege la escritura de los resultados y el registro compartido.
 El programa muestra el inicio y el final de cada hilo. No se presupone un
 orden fijo de ejecución ni una mejora de velocidad: el ejemplo enseña el
 ciclo de vida de los hilos y la coordinación del acceso compartido.
+
+Cada suma representa el conteo de unidades de un sector de una misma orden.
+Los sectores contienen cajas distintas con la misma carga. También
+se realiza la misma carga de forma secuencial y se miden ambos tiempos con
+`perf_counter_ns`. La salida incluye tablas por hilo y por modalidad, con
+cumplimiento, participación y reducción porcentual de tiempo. El tiempo total
+con hilos incluye su gestión; las mediciones puntuales pueden variar.
 
 ## 3. Modelo de planificación
 
@@ -151,6 +165,11 @@ atención, por lo que esas métricas pueden diferir.
 El promedio es la suma de la métrica dividida entre la cantidad de procesos.
 El cálculo didáctico recorre el historial por cada proceso: O(n·s), donde `s`
 es la cantidad de tramos. Este costo se añade al de cada planificador.
+
+`python/evaluacion.py` añade eficiencia temporal (`Duración / Retorno × 100`),
+porcentaje de espera y reducción respecto a FCFS. La tabla cruzada compara
+el mismo proceso entre políticas y conserva todos los empates. Las fórmulas,
+el manejo de referencias cero y sus límites se explican en el caso práctico.
 
 ## 9. Comparación del caso de ejemplo
 
