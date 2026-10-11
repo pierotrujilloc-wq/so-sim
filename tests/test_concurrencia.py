@@ -60,12 +60,26 @@ class PruebasConcurrencia(unittest.TestCase):
         resultado = self.ejecutar_aislado(
             "import json\nfrom dataclasses import asdict\n"
             "from hilos import demostrar_hilos\n"
-            "print(json.dumps(asdict(demostrar_hilos(4, 100))))\n"
+            "print(json.dumps(asdict(demostrar_hilos()), default=str))\n"
         )
-        self.assertEqual(resultado["resultados"], [5050] * 4)
-        for numero in range(1, 5):
-            inicio = resultado["eventos"].index(f"Hilo-{numero}: inicio")
-            fin = resultado["eventos"].index(f"Hilo-{numero}: fin, unidades = 5050")
+        self.assertTrue(resultado["resultados_coinciden"])
+        esperados = ["Cantidades verificadas: 4", "Vencimientos revisados: 3",
+                     "Etiquetas preparadas: 3", "Productos detectados sin ubicación: 1"]
+        for modalidad, total in [("secuencial", "tiempo_secuencial_ns"), ("con_hilos", "tiempo_hilos_ns")]:
+            registros = resultado[modalidad]
+            self.assertEqual([r["resultado"]["resumen"] for r in registros], esperados)
+            for registro in registros:
+                self.assertIsNone(registro["error"])
+                self.assertGreaterEqual(registro["inicio_ns"], 0)
+                self.assertGreaterEqual(registro["fin_ns"], registro["inicio_ns"])
+                self.assertLessEqual(registro["fin_ns"], resultado[total])
+        for anterior, siguiente in zip(resultado["secuencial"], resultado["secuencial"][1:]):
+            self.assertLessEqual(anterior["fin_ns"], siguiente["inicio_ns"])
+        for numero, registro in enumerate(resultado["con_hilos"], start=1):
+            self.assertEqual(registro["responsable"], f"Hilo-{numero}")
+            nombre = registro["nombre"]
+            inicio = resultado["eventos"].index(f"Hilo-{numero}: inicio de {nombre}")
+            fin = resultado["eventos"].index(f"Hilo-{numero}: fin de {nombre}")
             self.assertLess(inicio, fin)
 
     def test_configuracion_invalida(self):

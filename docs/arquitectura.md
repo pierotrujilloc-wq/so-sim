@@ -18,8 +18,8 @@ de participación individual que solicita la rúbrica.
 ## Elección de lenguajes
 
 El caso común es el [almacén de un supermercado](caso_superalmacen.md).
-Los procesos representan órdenes de trabajo; los hilos cuentan sectores de una
-misma orden y el búfer es la zona donde recepción y ubicación intercambian cajas.
+Los procesos representan órdenes de trabajo; los hilos realizan tareas distintas
+sobre una entrega y el búfer es la zona donde recepción y ubicación intercambian cajas.
 La mesa de preparación de pedidos representará la RAM en la etapa de memoria.
 El caso documenta también E/S, archivos, seguridad y comunicación entre sucursales;
 esas etapas todavía no forman parte de la implementación.
@@ -44,13 +44,17 @@ flowchart TD
     Algoritmos --> Metricas[modelos.py: métricas del historial]
     Metricas --> Salida[presentacion.py: tablas y Gantt textual]
     Consola --> Hilos[hilos.py: start y join]
+    Hilos --> Tareas[tareas_almacen.py: entrega y funciones de revisión]
+    Hilos --> Salida
     Consola --> Sincronizacion[sincronizacion.py: productores y consumidores]
     Sincronizacion --> Salida
-    Usuario --> C[procesos.c: ejecutar en Linux o WSL]
+    Consola --> Puente[procesos.py: subprocess]
+    Puente --> C[procesos.c: compilar y ejecutar en Linux o Ubuntu WSL]
 ```
 
 Los módulos se reúnen mediante la consola y la documentación. La demostración
-de C se compila y ejecuta aparte para observar las llamadas del sistema.
+de C se compila y ejecuta desde la opción 6 mediante `python/procesos.py` y
+`subprocess`, mostrando sus resultados en la misma terminal.
 El planificador no controla los procesos reales creados por C: simula una CPU
 con un reloj virtual para permitir comparaciones reproducibles.
 
@@ -61,6 +65,7 @@ so-sim/
   c/procesos.c               Demostración de procesos POSIX
   python/
     main.py                  Menú y comandos
+    procesos.py              Compilación y ejecución de C con subprocess
     entrada.py               Validación y lectura de las cuatro columnas
     modelos.py               Datos, tramos de CPU y métricas
     evaluacion.py            Porcentajes de atención y reducción de tiempos
@@ -69,7 +74,8 @@ so-sim/
       sjf.py                 Menor duración disponible
       prioridad.py           Mayor prioridad disponible
       round_robin.py         Cola de listos y quantum
-    hilos.py                 Conteo por sectores y comparación de tiempos
+    tareas_almacen.py         Entrega de ejemplo y lista ampliable de tareas
+    hilos.py                 Ejecución secuencial y con Thread por tarea
     sincronizacion.py        Búfer circular y productor-consumidor
     presentacion.py           Tablas, trazas y comparación
   data/processes/             Ejemplos CSV

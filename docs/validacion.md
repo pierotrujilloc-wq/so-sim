@@ -2,11 +2,18 @@
 
 ## Resultado de la comprobación de SuperAlmacén
 
-- Windows con Python 3.13: las 30 pruebas pasaron.
-- Ubuntu en WSL: las mismas 30 pruebas pasaron.
+- Windows con Python 3.13: las 49 pruebas pasaron tras actualizar las tareas
+  de la opción 4.
+
+Comprobaciones previas a esta actualización de la opción 4:
+
+- Ubuntu en WSL: las 38 pruebas de la versión anterior pasaron.
 - C en Ubuntu WSL: compiló con `-Wall -Wextra -Werror` y terminó con código 0.
   Se observó un PID diferente para padre e hijo, conservación del PID del
   hijo al ejecutar `execvp`, suma final igual a 15 y tabla de cumplimiento.
+- Opción 6 desde Python en Windows: compilación y ejecución reales en Ubuntu
+  WSL, salida en la terminal y regreso al menú. También se verificó el comando
+  `python3 python/main.py procesos` directamente en Linux.
 
 ## Suite automatizada
 
@@ -16,7 +23,7 @@ Ejecutar desde la raíz:
 python3 -m unittest discover -s tests -v
 ```
 
-La suite contiene 30 pruebas, algunas con varios escenarios internos.
+La suite contiene 49 pruebas, algunas con varios escenarios internos.
 
 | Área | Evidencia |
 |---|---|
@@ -27,13 +34,20 @@ La suite contiene 30 pruebas, algunas con varios escenarios internos.
 | Round Robin | Llegada justo al terminar un quantum y quantum grande equivalente a FCFS. |
 | Conservación | 40 casos generados con semilla fija, ejecutados con los cuatro planificadores. |
 | Entrada | Cabecera exacta, UTF-8 con BOM, columnas extra o faltantes, duplicados y números inválidos. |
-| Hilos | Cuatro sumas correctas, eventos de inicio anteriores al fin y espera de terminación. |
+| Hilos | Cuatro tareas distintas, resultados iguales entre modalidades, intervalos válidos y espera de terminación. |
+| Tareas de almacén | Diferencias de cantidades, fechas límite de vencimiento, etiquetas y ubicaciones vacías. |
+| Ampliación y errores | Registro de una quinta tarea, selección parcial, entrada inválida, fallos y diferencias en resultados. |
 | Sincronización | Búfer de capacidad 1, productores y consumidores múltiples, cero elementos y consumidores sobrantes. |
 | Consola | Comando predeterminado, error de archivo y carga manual mediante el menú. |
 | Porcentajes | Eficiencia y espera complementarias, mejora y empeoramiento frente a FCFS, referencia cero y ausencia de FCFS. |
 | Comparación por proceso | Porcentajes de P3 calculados a mano y conservación de empates entre algoritmos. |
 | Tiempos de hilos | Reloj controlado en una prueba para distinguir tiempo de tarea y tiempo total con gestión; nunca se presupone un ganador real. |
-| Contexto | Órdenes del ejemplo, conteo de unidades, zona de recepción y recorrido de las opciones 4, 5 y 6 de SuperAlmacén. |
+| Contexto | Órdenes del ejemplo, revisión de entregas, zona de recepción y recorrido de las opciones 4, 5 y 6 de SuperAlmacén. |
+| Puente Python/C | Comandos para Windows/Linux, rutas con espacios, retorno al menú, errores de compilación y ejecución, herramientas ausentes y timeout. |
+
+Las pruebas de `test_procesos.py` sustituyen `subprocess.run` por respuestas
+controladas para cubrir errores sin exigir WSL o GCC a quien ejecute la suite.
+La integración real se comprobó por separado, como se indica arriba.
 
 En los casos generados se verifica que cada proceso ejecuta exactamente su
 duración, nunca comienza antes de llegar, no hay huecos ocultos entre tramos,

@@ -9,18 +9,20 @@ escritos con listas, ciclos y condiciones para facilitar su explicación.
 
 **SuperAlmacén** recibe mercadería, cuenta cajas y atiende órdenes de reposición.
 El jefe representa al sistema operativo; un operario representa la CPU y cada
-proceso es una orden de trabajo. Los hilos cuentan distintos sectores de una
-misma orden. Recepción y ubicación comparten una zona limitada de cajas.
+proceso es una orden de trabajo. Los hilos realizan distintas revisiones de una
+misma entrega. Recepción y ubicación comparten una zona limitada de cajas.
 El contexto completo está en [Caso SuperAlmacén](docs/caso_superalmacen.md).
 
 - **Opciones 1–3:** Gantt y tablas con eficiencia temporal por proceso
   (`Duración / Retorno × 100`), porcentaje de espera y reducción de espera y
   respuesta frente a FCFS. Se indican las mejores políticas y los empates.
-- **Opción 4:** tabla por hilo y comparación de la misma orden contada de forma
-  secuencial y con hilos, con tiempos reales y reducción porcentual.
+- **Opción 4:** elegir tareas para revisar una entrega: cantidades, vencimientos,
+  etiquetas y productos sin ubicación. Enter ejecuta todas; `1,3` selecciona dos.
+  Muestra una tabla secuencial y otra con hilos, con resultados, responsable,
+  inicio, fin y duración. Verifica resultados iguales y compara tiempos totales.
 - **Opción 5:** recepción y retirada de cajas de la zona compartida.
-- **Opción 6:** instrucciones para ejecutar el jefe y operario en C;
-  el ejecutable muestra una tabla de roles, PID y cumplimiento.
+- **Opción 6:** compila y ejecuta el jefe y operario en C mediante `subprocess`;
+  muestra los PID, la tabla de cumplimiento y regresa al menú.
 
 La eficiencia temporal depende de llegada y duración; compara atención frente
 a espera. Las mediciones de hilos son puntuales y pueden variar. Un porcentaje
@@ -65,7 +67,9 @@ También acepta comandos:
 
 ```powershell
 .\ejecutar.bat planificar --quantum 2
+.\ejecutar.bat hilos --tareas 1,3
 .\ejecutar.bat sincronizar --capacidad 3 --elementos 5
+.\ejecutar.bat procesos
 ```
 
 ### Crear el entorno en otra copia del proyecto
@@ -102,7 +106,8 @@ También se pueden ejecutar casos directamente:
 python3 python/main.py planificar --archivo data/processes/ejemplo.csv --quantum 2
 python3 python/main.py planificar --algoritmo sjf
 python3 python/main.py planificar --algoritmo rr --quantum 3
-python3 python/main.py hilos --cantidad 3 --limite 5
+python3 python/main.py hilos --tareas todas
+python3 python/main.py hilos --tareas 1,3
 python3 python/main.py sincronizar --productores 2 --consumidores 2 --capacidad 5 --elementos 10
 ```
 
@@ -111,7 +116,15 @@ En Windows, reemplaza `python3 python/main.py` por `.\ejecutar.bat`.
 
 ### Procesos en C
 
-En una terminal Linux/WSL, desde la raíz del proyecto:
+Selecciona **6** en el menú. Python crea `build/`, compila `c/procesos.c` con
+GCC y ejecuta el resultado en la misma terminal. En Windows utiliza la
+distribución **Ubuntu de WSL**; en Linux invoca GCC directamente. Si falla la
+compilación, muestra el error y regresa al menú sin ejecutar un binario anterior.
+
+Con el entorno activado también puedes ejecutar `python python/main.py procesos`.
+La opción requiere GCC instalado dentro de Ubuntu WSL o del Linux utilizado.
+
+Para compilar manualmente desde una terminal Linux/WSL en la raíz del proyecto:
 
 ```bash
 mkdir -p build
