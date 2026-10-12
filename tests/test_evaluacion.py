@@ -15,6 +15,7 @@ from hilos import demostrar_hilos
 from modelos import Metrica, Proceso
 from planificacion import fcfs, por_prioridad, round_robin, sjf
 from presentacion import mostrar_comparacion, mostrar_hilos
+from tareas_almacen import TAREAS
 
 
 class PruebasEvaluacion(unittest.TestCase):
@@ -71,13 +72,18 @@ class PruebasEvaluacion(unittest.TestCase):
     def test_medicion_de_lote_incluye_gestion_de_hilos(self):
         # Con un hilo, las lecturas del reloj tienen un orden determinista.
         # Evita afirmar que una modalidad siempre gana en equipos reales.
-        with patch("hilos.perf_counter_ns", side_effect=[100, 200, 300, 400, 450, 600]):
-            resultado = demostrar_hilos(1, 5)
-        self.assertEqual(resultado.resultados, [15])
+        with patch("hilos.perf_counter_ns", side_effect=[100, 120, 180, 200, 300, 400, 450, 600]):
+            resultado = demostrar_hilos([TAREAS[0]])
+        self.assertTrue(resultado.resultados_coinciden)
+        self.assertEqual(resultado.secuencial[0].resultado.resumen, "Cantidades verificadas: 4")
+        self.assertEqual((resultado.secuencial[0].inicio_ns, resultado.secuencial[0].fin_ns), (20, 80))
         self.assertEqual(resultado.tiempo_secuencial_ns, 100)
         self.assertEqual(resultado.tiempo_hilos_ns, 300)
-        self.assertEqual(resultado.tiempos_tareas_ns, [50])
+        self.assertEqual((resultado.con_hilos[0].inicio_ns, resultado.con_hilos[0].fin_ns), (100, 150))
         texto = self.capturar(mostrar_hilos, resultado)
+        secuencial, hilos = texto.split("=== Modalidad con hilos: tareas de la entrega ===")
+        self.assertIn("0.000060", secuencial)
+        self.assertIn("0.000050", hilos)
         self.assertIn("-200.00%", texto)
         self.assertIn("Menor tiempo total observado: Secuencial", texto)
         self.assertIn("100.00%", texto)

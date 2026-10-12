@@ -6,11 +6,13 @@ from pathlib import Path
 from entrada import cargar_csv, ingresar_procesos, pedir_entero
 from hilos import demostrar_hilos
 from modelos import Proceso
+from procesos import ejecutar_procesos
 from planificacion import fcfs, por_prioridad, round_robin, sjf
 from presentacion import (
     mostrar_comparacion, mostrar_hilos, mostrar_procesos, mostrar_resultado, mostrar_sincronizacion,
 )
 from sincronizacion import ejecutar_productor_consumidor
+from tareas_almacen import TAREAS, seleccionar_tareas
 
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -51,9 +53,9 @@ def menu() -> None:
         print("1. Planificar las órdenes del almacén del CSV de ejemplo")
         print("2. Ingresar procesos (órdenes de trabajo) y comparar")
         print("3. Cargar otro CSV de órdenes y comparar")
-        print("4. Contar productos por sectores con hilos y comparar tiempos")
+        print("4. Revisar una entrega: tareas secuenciales y con hilos")
         print("5. Coordinar recepción de cajas: productor-consumidor")
-        print("6. Ver instrucciones para jefe y operario en C")
+        print("6. Ejecutar jefe y operario en C (fork/exec)")
         print("0. Salir")
         opcion = input("Opción: ").strip()
         try:
@@ -69,9 +71,16 @@ def menu() -> None:
                 quantum = pedir_entero("Quantum de Round Robin: ", 1)
                 ejecutar_planificacion(procesos, quantum, "todos", es_ejemplo=opcion == "1")
             elif opcion == "4":
-                cantidad = pedir_entero("Sectores de la orden (un hilo por sector): ", 1)
-                limite = pedir_entero("Cajas por sector (contienen de 1 a N unidades): ", 1)
-                mostrar_hilos(demostrar_hilos(cantidad, limite))
+                print("Tareas disponibles para la misma entrega:")
+                for numero, (nombre, _) in enumerate(TAREAS, start=1):
+                    print(f"  {numero}. {nombre}")
+                while True:
+                    try:
+                        tareas = seleccionar_tareas(input("Tareas (ej. 1,3; Enter o 0 = todas): "))
+                        break
+                    except ValueError as error:
+                        print(f"Error: {error}")
+                mostrar_hilos(demostrar_hilos(tareas))
             elif opcion == "5":
                 productores = pedir_entero("Operarios de recepción (productores): ", 1)
                 consumidores = pedir_entero("Operarios de ubicación (consumidores): ", 1)
@@ -81,12 +90,7 @@ def menu() -> None:
                     productores, consumidores, capacidad, cantidad,
                 ))
             elif opcion == "6":
-                print("SuperAlmacén: el jefe (padre) crea un operario (hijo) para contar productos de una entrega.")
-                print("En Linux/WSL, desde la raíz del proyecto:")
-                print("  mkdir -p build")
-                print("  gcc -std=c11 -Wall -Wextra -Werror c/procesos.c -o build/procesos")
-                print("  ./build/procesos")
-                print("Explicación: docs/modulo_1.md")
+                ejecutar_procesos(RAIZ)
             else:
                 print("Elija una opción del menú.")
         except (ValueError, OSError, UnicodeError) as error:
@@ -96,13 +100,13 @@ def menu() -> None:
 def main() -> int:
     parser = argparse.ArgumentParser(description="SO-Sim | SuperAlmacén: almacén de supermercado")
     comandos = parser.add_subparsers(dest="comando")
+    comandos.add_parser("procesos", help="Compilar y ejecutar fork/exec en C (Linux o Ubuntu WSL)")
     planificar = comandos.add_parser("planificar", help="Ejecutar uno o todos los algoritmos")
     planificar.add_argument("--archivo", type=Path, default=EJEMPLO)
     planificar.add_argument("--quantum", type=int, default=2)
     planificar.add_argument("--algoritmo", choices=["todos", "fcfs", "sjf", "prioridad", "rr"], default="todos")
-    hilos = comandos.add_parser("hilos", help="Crear hilos y esperar su finalización")
-    hilos.add_argument("--cantidad", type=int, default=3, help="Sectores de la orden, un hilo por sector")
-    hilos.add_argument("--limite", type=int, default=5, help="Cajas por sector, con 1 a N unidades")
+    hilos = comandos.add_parser("hilos", help="Comparar tareas de una entrega secuencialmente y con hilos")
+    hilos.add_argument("--tareas", default="todas", help="Números separados por comas (ej. 1,3) o todas")
     sincronizar = comandos.add_parser("sincronizar", help="Ejecutar productor-consumidor")
     sincronizar.add_argument("--productores", type=int, default=2)
     sincronizar.add_argument("--consumidores", type=int, default=2)
@@ -113,13 +117,18 @@ def main() -> int:
     try:
         if args.comando is None:
             menu()
+        elif args.comando == "procesos":
+            return ejecutar_procesos(RAIZ)
         elif args.comando == "planificar":
             ejecutar_planificacion(
                 cargar_csv(args.archivo), args.quantum, args.algoritmo,
                 es_ejemplo=args.archivo.resolve() == EJEMPLO,
             )
         elif args.comando == "hilos":
-            mostrar_hilos(demostrar_hilos(args.cantidad, args.limite))
+            resultado = demostrar_hilos(seleccionar_tareas(args.tareas))
+            mostrar_hilos(resultado)
+            if not resultado.resultados_coinciden:
+                return 1
         elif args.comando == "sincronizar":
             mostrar_sincronizacion(ejecutar_productor_consumidor(
                 args.productores, args.consumidores, args.capacidad, args.elementos,

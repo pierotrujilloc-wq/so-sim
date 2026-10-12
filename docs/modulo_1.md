@@ -9,6 +9,27 @@ y etiquetas sin agregar campos a las cuatro columnas de entrada.
 
 Archivo: `c/procesos.c`.
 
+### Ejecución desde la opción 6
+
+`main.py` llama a `ejecutar_procesos()` de `python/procesos.py`. La función
+crea `build/` y usa dos llamadas a `subprocess.run`: primero GCC y, solo si
+la compilación termina correctamente, el ejecutable `build/procesos`.
+
+En Windows, cada comando pasa por `wsl.exe -d Ubuntu --cd <raíz> --exec`.
+En Linux se ejecuta directamente. Los argumentos se pasan como una lista,
+para admitir rutas con espacios sin interpretar comandos de una shell.
+La salida y los errores se muestran en la misma terminal. La entrada del
+programa externo se conecta a `DEVNULL` para conservar las siguientes opciones
+del menú. Python espera a que termine y luego vuelve a mostrar el menú.
+
+La compilación tiene un límite de 60 segundos y la ejecución de 15 segundos.
+Si falta una herramienta, falla un paso o se agota el plazo, se informa el error.
+El comando `python python/main.py procesos` permite la misma ejecución sin menú
+y devuelve su código de salida. `subprocess` inicia el programa; las llamadas
+`fork`, `execvp` y `waitpid` que se estudian siguen implementadas en C.
+
+### Recorrido del programa C
+
 1. El padre imprime su PID y vacía el búfer de salida con `fflush`.
 2. `fork` crea un hijo. Devuelve su PID al padre, cero al hijo o un valor
    negativo si falla.
@@ -30,22 +51,43 @@ ejecuciones. La suma esperada es 15 y el padre debe informar código de salida 0
 
 ## 2. Hilos en Python
 
-Archivo: `python/hilos.py`.
+Archivos: `python/tareas_almacen.py`, `python/hilos.py` y `python/presentacion.py`.
 
-Cada `Thread` ejecuta una función que suma desde 1 hasta un límite. `start`
-inicia la tarea; `join` espera que termine. El acumulador es local a cada hilo.
-Un mutex protege la escritura de los resultados y el registro compartido.
+Una entrega se revisa mediante tareas independientes: verificar cantidades,
+revisar vencimientos, preparar etiquetas y detectar productos sin ubicación.
+Cada tarea tiene una función con sus propios ciclos y condiciones. Las cuatro
+trabajan con la misma entrega de solo lectura y producen resultados separados.
 
-El programa muestra el inicio y el final de cada hilo. No se presupone un
-orden fijo de ejecución ni una mejora de velocidad: el ejemplo enseña el
-ciclo de vida de los hilos y la coordinación del acceso compartido.
+Recorrido de la opción 4:
 
-Cada suma representa el conteo de unidades de un sector de una misma orden.
-Los sectores contienen cajas distintas con la misma carga. También
-se realiza la misma carga de forma secuencial y se miden ambos tiempos con
-`perf_counter_ns`. La salida incluye tablas por hilo y por modalidad, con
-cumplimiento, participación y reducción porcentual de tiempo. El tiempo total
-con hilos incluye su gestión; las mediciones puntuales pueden variar.
+1. `main.py` enumera la lista `TAREAS`. El usuario elige números separados por
+   comas, por ejemplo `1,3`, o pulsa Enter para ejecutar todas.
+2. `demostrar_hilos` ejecuta las funciones elegidas en un ciclo: el hilo principal
+   termina cada tarea antes de comenzar la siguiente (modalidad secuencial).
+3. Crea un `threading.Thread` por tarea. `start()` inicia cada hilo; después de
+   iniciar todos, otro ciclo llama a `join()` para esperar su finalización.
+4. Cada hilo lee la entrega y ejecuta su función. Un `Lock` protege únicamente
+   la escritura de resultados y eventos; la revisión ocurre fuera del bloqueo.
+5. `medir_tarea` registra inicio, fin, resultado y posibles errores. Los tiempos
+   usan `perf_counter_ns` y son relativos al inicio de su propia modalidad.
+6. Se comparan los resultados completos, incluidos los detalles. La consola
+   muestra ambas tablas y el resumen de tiempos, cumplimiento y reducción.
+
+La entrega usa `dataclass(frozen=True)` y una tupla de productos. Las funciones
+crean sus propias listas de resultados. Si una tarea falla, se registra el error
+también dentro del hilo: `join()` por sí solo no propaga sus excepciones al padre.
+Un error o resultados diferentes invalidan la comparación de rendimiento.
+
+Los hilos son concurrentes; eso no garantiza paralelismo ni menor tiempo. En la
+instalación habitual de CPython, el GIL limita la ejecución simultánea de código
+Python. Estas tareas cortas pueden terminar antes de que arranque el siguiente
+hilo. No se insertan pausas para forzar un solapamiento. El total con hilos incluye
+creación, registro, coordinación y espera, por lo que puede ser mayor.
+
+Para agregar tareas, escribe una función que reciba `Entrega` y devuelva
+`ResultadoTarea`, y añádela a `TAREAS` en `python/tareas_almacen.py`. El menú,
+las dos modalidades y las tablas usan esa lista. Hay un ejemplo completo en
+[Cómo añadir una tarea](caso_superalmacen.md#cómo-añadir-una-tarea).
 
 ## 3. Modelo de planificación
 

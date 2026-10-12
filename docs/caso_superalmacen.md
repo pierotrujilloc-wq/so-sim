@@ -25,7 +25,7 @@ prevista en este documento y se implementarán cuando se autorice esa etapa.
 | Quantum | Máximo tiempo de atención por turno en Round Robin. |
 | Proceso padre en C | Jefe que crea y supervisa un operario. |
 | Proceso hijo en C | Operario que cuenta productos de una entrega. |
-| Hilo | Colaborador que cuenta un sector dentro de una orden compartida. |
+| Hilo | Colaborador que realiza una tarea de revisión sobre una entrega compartida. |
 | Productor | Operario de recepción que ingresa cajas. |
 | Consumidor | Operario de ubicación que retira cajas para llevarlas a estantes. |
 | Búfer | Zona de recepción con una cantidad limitada de posiciones. |
@@ -114,45 +114,101 @@ temporal es 16.67%; con Round Robin su retorno es 4 y obtiene 50%. Para P3,
 Round Robin ofrece la mejor eficiencia entre las cuatro políticas del ejemplo.
 Para P1, las tres variantes sin desalojo empatan con 100%.
 
-## Conteo de una orden por sectores con hilos: opción 4
+## Revisión de una entrega con tareas e hilos: opción 4
 
-Una orden de conteo se divide en sectores, uno por hilo. Cada sector tiene
-N cajas con 1, 2, ..., N unidades de producto. Por ejemplo, con N = 5 se cuentan
-15 unidades por sector. Son cajas diferentes de una misma entrega: no se
-cuenta varias veces la misma mercadería. El patrón de cantidades es idéntico
-en todos los sectores para comparar la misma carga.
+La comparación usa tareas diferentes dentro de un mismo trabajo: revisar una
+entrega del supermercado. Así se traslada la idea de cortar, freír y preparar
+salsa de la clase a funciones propias del almacén.
 
-La función `contar_unidades` se ejecuta primero de forma secuencial para todos
-los sectores y después mediante un hilo por sector. Se verifican ambos
-resultados contra N × (N + 1) / 2. El reloj `perf_counter_ns` mide el tiempo real
-transcurrido; estas mediciones no se mezclan con el reloj virtual del planificador.
+| Tarea | Función en `tareas_almacen.py` | Resultado del ejemplo |
+|---|---|---|
+| Verificar cantidades | `verificar_cantidades` compara lo recibido con lo esperado. | Cantidades verificadas: 4. |
+| Revisar vencimientos | `revisar_vencimientos` compara fechas con la fecha de revisión. | Vencimientos revisados: 3. |
+| Preparar etiquetas | `preparar_etiquetas` genera texto con nombre y ubicación asignada. | Etiquetas preparadas: 3. |
+| Detectar productos sin ubicación | `detectar_productos_sin_ubicacion` busca ubicaciones vacías. | Productos detectados sin ubicación: 1. |
 
-La salida contiene:
+La entrega contiene arroz, leche, aceite y detergente. Está definida en
+`ENTREGA_EJEMPLO`, junto con una fecha fija de revisión: **2026-10-10**. Una fecha
+de vencimiento anterior se considera vencida; la misma fecha aún no. `None`
+indica que no aplica. Mantener la fecha fija permite reproducir los resultados.
+Las ubicaciones vienen asignadas en la entrada; generar una etiqueta no aprueba
+un producto ni autoriza su venta. Ninguna tarea necesita el resultado de otra.
 
-1. Eventos de inicio y fin.
-2. Tabla por hilo: unidades contadas, cumplimiento, participación en la orden
-   y tiempo transcurrido en su tarea.
-3. Tabla de la orden completa: tiempo secuencial, tiempo con hilos y reducción
-   porcentual respecto al secuencial.
+En la opción 4 se eligen números separados por comas (`1,3`), o Enter/`0` para
+todas. La cantidad de hilos corresponde a las tareas seleccionadas: cuatro por
+defecto. Estos datos de mercadería pertenecen al ejemplo de hilos; el CSV de
+planificación conserva sus cuatro columnas originales.
+
+- **Secuencial:** un colaborador (hilo principal) termina una tarea y pasa a la
+  siguiente. Un ciclo llama a cada función directamente.
+- **Con hilos:** cada colaborador (`Thread`) ejecuta una función distinta sobre
+  la misma entrega de solo lectura. Se inician todos con `start()` y después se
+  espera a todos con `join()`. Un mutex protege el registro compartido.
+
+La salida presenta los datos de entrada, una tabla secuencial, los eventos de
+los hilos, una tabla con hilos y la comparación total. Cada fila muestra tarea,
+responsable, resultado resumido, inicio, fin y duración. Se muestran cantidades
+verificadas, fechas revisadas, etiquetas preparadas y productos sin ubicación.
+Los detalles se conservan internamente para comprobar que ambas modalidades
+producen los mismos resultados, sin imprimir fechas de vencimiento detectadas
+ni el contenido de las etiquetas. Solo se cuentan como revisados los productos
+que tienen fecha de vencimiento.
+
+El reloj `perf_counter_ns` mide el tiempo real. Inicio y fin se expresan desde el
+comienzo de **cada modalidad**: ambas tienen su propio origen. En secuencial,
+una tarea empieza después de acabar la anterior. Con hilos puede haber intervalos
+solapados, aunque estas funciones cortas pueden terminar antes de iniciar otra.
+No se añaden pausas para fabricar un resultado más favorable.
 
 ```text
-Cumplimiento (%) = Unidades contadas / Unidades esperadas × 100
-Parte de la orden (%) = Unidades del hilo / Unidades de todos los hilos × 100
+Cumplimiento (%) = Tareas ejecutadas sin error / Tareas seleccionadas × 100
 Reducción de tiempo (%) = (Tiempo secuencial - Tiempo con hilos) / Tiempo secuencial × 100
 ```
 
-Cumplimiento y participación describen trabajo realizado; no son porcentajes
-de aceleración. El tiempo total con hilos incluye creación, registro de eventos,
-coordinación y `join`. Los tiempos individuales pueden solaparse y no deben
-sumarse para deducir el tiempo de la orden.
+El cumplimiento describe ejecución correcta de funciones. Detectar mercadería
+vencida es un resultado válido, por lo que puede haber 100% de cumplimiento
+aunque se detecten problemas en la entrega. Si falla una función o difieren
+los resultados, se informa que la comparación no es válida y no se elige ganador.
 
-Es una medición puntual, secuencial primero y con hilos después, sin controlar
-la carga externa del equipo. En tareas pequeñas predominan los costos de
-gestión y la variabilidad del reloj. Se informa la modalidad más rápida en esa
-ejecución; no se establece un ganador permanente. El trabajo es un cálculo,
-por lo que más hilos no garantizan mayor velocidad.
+El tiempo total con hilos incluye creación, registro, coordinación y `join`.
+No se suman las duraciones individuales para deducir el total, porque pueden
+solaparse. Las tareas son diferentes: sus duraciones no permiten clasificar
+qué hilo es más eficiente. Se compara la selección completa entre modalidades.
+Un porcentaje negativo significa que los hilos tardaron más en esa ejecución.
+Son mediciones puntuales, afectadas por la carga del equipo y la gestión de hilos.
+
+### Cómo añadir una tarea
+
+En `python/tareas_almacen.py`:
+
+1. Escribe una función antes de la lista `TAREAS`. Debe recibir `Entrega`, leer
+   sus datos y devolver `ResultadoTarea(resumen, detalles)`.
+2. Añade el nombre y la función a `TAREAS`.
+
+Por ejemplo, para generar un reporte de los nombres recibidos:
+
+```python
+def listar_productos(entrega: Entrega) -> ResultadoTarea:
+    nombres = []
+    for producto in entrega.productos:
+        nombres.append(producto.nombre)
+    return ResultadoTarea(f"Productos: {len(nombres)}", tuple(nombres))
+
+# Añadir esta entrada dentro de TAREAS:
+# ("Listar productos", listar_productos),
+```
+
+El menú, los hilos y las tablas incorporan la nueva entrada automáticamente.
+Para cambiar la mercadería, edita `ENTREGA_EJEMPLO`. Si una futura tarea necesita
+un dato adicional, añade ese campo a `ProductoEntrega` y a los productos del
+ejemplo. Mantén tareas independientes y datos de solo lectura para esta comparación.
 
 ## Procesos reales en C: opción 6
+
+Al seleccionar 6, Python usa `subprocess` para compilar y ejecutar el ejemplo
+automáticamente. En Windows utiliza Ubuntu WSL; en Linux, GCC directamente.
+Los resultados aparecen en la misma terminal y al terminar se regresa al menú.
+Si la compilación falla se informa el error y no se ejecuta una versión anterior.
 
 El jefe crea al operario con `fork`. El operario reemplaza su
 programa con `execvp` y cuenta cinco cajas con 1 a 5 unidades (15 unidades).
@@ -184,7 +240,7 @@ CPU de una simulación de planificación con múltiples procesadores.
 
 | Módulo | Aplicación en SuperAlmacén | Estado |
 |---|---|---|
-| 1. Procesos, hilos y planificación | Órdenes de trabajo, jefe y operario, conteo por sectores y reparto de turnos. | Implementado |
+| 1. Procesos, hilos y planificación | Órdenes de trabajo, jefe y operario, revisión de entregas y reparto de turnos. | Implementado |
 | 2. Sincronización | Recepción y retirada de cajas con semáforos y mutex. | Implementado |
 | 3. Memoria | Mesa de preparación, casilleros, fichas y reemplazo de páginas. | Propuesto |
 | 4. E/S y archivos | Equipos de lectura y traslado, almacenamiento de registros por bloques. | Propuesto |

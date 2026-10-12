@@ -2,7 +2,7 @@
 
 from entrada import COLUMNAS
 from evaluacion import porcentajes_proceso, reduccion_porcentual
-from hilos import ResultadoHilos
+from hilos import EjecucionTarea, ResultadoHilos
 from modelos import Proceso, Resultado
 from sincronizacion import ResultadoSincronizacion
 
@@ -131,38 +131,73 @@ def mostrar_comparacion(resultados: list[Resultado]) -> None:
         print(f"{resultado.algoritmo}: {barra} ({espera:.2f})")
 
 
+def mostrar_tabla_tareas(titulo: str, registros: list[EjecucionTarea]) -> None:
+    print(f"\n=== {titulo} ===")
+    filas = []
+    for registro in registros:
+        resumen = "ERROR" if registro.error else registro.resultado.resumen
+        filas.append([
+            registro.nombre, registro.responsable, resumen,
+            f"{registro.inicio_ns / 1_000_000:.6f}",
+            f"{registro.fin_ns / 1_000_000:.6f}",
+            f"{(registro.fin_ns - registro.inicio_ns) / 1_000_000:.6f}",
+        ])
+    imprimir_tabla(["Tarea", "Responsable", "Resultado", "Inicio (ms)", "Fin (ms)", "Duración (ms)"], filas)
+    for registro in registros:
+        if registro.error:
+            print(f"  {registro.nombre}: {registro.error}")
+
+
 def mostrar_hilos(resultado: ResultadoHilos) -> None:
-    print("\nSuperAlmacén: una orden de conteo se reparte en sectores, uno por hilo.")
-    print("Cada sector tiene cajas distintas con 1 a N unidades; todos tienen la misma carga.")
+    print("\nSuperAlmacén: revisión de una entrega mediante tareas diferentes.")
+    print(f"Fecha fija de revisión del ejemplo: {resultado.entrega.fecha_revision.isoformat()}")
+    filas = []
+    for producto in resultado.entrega.productos:
+        filas.append([
+            producto.nombre, str(producto.esperadas), str(producto.recibidas),
+            str(producto.vencimiento) if producto.vencimiento else "No aplica",
+            producto.ubicacion or "Sin asignar",
+        ])
+    imprimir_tabla(["Producto", "Esperadas", "Recibidas", "Vencimiento", "Ubicación"], filas)
+    print("Las dos modalidades leen esta misma entrega; cada tarea genera su propio resultado.")
+    print("Secuencial: el hilo principal termina una tarea antes de comenzar la siguiente.")
+    mostrar_tabla_tareas("Modalidad secuencial: tareas de la entrega", resultado.secuencial)
+    print("\nCon hilos: se inicia un hilo por tarea y después se espera a todos con join().")
     for evento in resultado.eventos:
         print(evento)
-    esperado = resultado.limite * (resultado.limite + 1) // 2
-    total_unidades = sum(resultado.resultados)
-    filas = []
-    for indice, unidades in enumerate(resultado.resultados):
-        filas.append([
-            f"Hilo-{indice + 1}", str(unidades),
-            f"{unidades / esperado * 100:.2f}%",
-            f"{unidades / total_unidades * 100:.2f}%",
-            f"{resultado.tiempos_tareas_ns[indice] / 1_000_000:.6f}",
-        ])
-    print("\n=== Comparación de hilos: misma carga por sector ===")
-    imprimir_tabla(["Hilo", "Unidades", "Cumplimiento", "Parte de la orden", "Tarea (ms)"], filas)
-    print("Cumplimiento = unidades contadas / esperadas; parte de la orden = unidades / total; ambos x 100.")
-    print("Los tiempos de tarea son tiempos transcurridos; las tareas pueden solaparse.")
-    print("\n=== Misma orden: secuencial frente a hilos ===")
+    mostrar_tabla_tareas("Modalidad con hilos: tareas de la entrega", resultado.con_hilos)
+    print("Inicio y fin se miden desde el comienzo de CADA modalidad; son relojes relativos separados.")
+    print("Los intervalos con hilos pueden solaparse, pero tareas pequeñas pueden terminar una tras otra.")
+    print("Son tiempos reales medidos, no pausas simuladas. El total incluye medición y gestión.")
+    print("\n=== Misma entrega: secuencial frente a hilos ===")
     reduccion = reduccion_porcentual(resultado.tiempo_secuencial_ns, resultado.tiempo_hilos_ns)
-    imprimir_tabla(["Modalidad", "Sectores", "Tiempo total (ms)", "Reducción vs secuencial"], [
-        ["Secuencial", str(len(resultado.resultados)), f"{resultado.tiempo_secuencial_ns / 1_000_000:.6f}", "0.00%"],
-        ["Hilos", str(len(resultado.resultados)), f"{resultado.tiempo_hilos_ns / 1_000_000:.6f}", formatear_porcentaje(reduccion)],
-    ])
+    filas = []
+    for nombre, registros, tiempo, porcentaje in [
+        ("Secuencial", resultado.secuencial, resultado.tiempo_secuencial_ns, 0.0),
+        ("Hilos", resultado.con_hilos, resultado.tiempo_hilos_ns,
+         reduccion if resultado.resultados_coinciden else None),
+    ]:
+        completadas = sum(1 for registro in registros if registro.error is None)
+        filas.append([
+            nombre, str(len(registros)), str(completadas),
+            f"{completadas / len(registros) * 100:.2f}%",
+            f"{tiempo / 1_000_000:.6f}", formatear_porcentaje(porcentaje),
+        ])
+    imprimir_tabla(["Modalidad", "Tareas", "Completadas", "Cumplimiento", "Tiempo total (ms)", "Reducción vs secuencial"], filas)
+    print("Cumplimiento = tareas ejecutadas sin error / seleccionadas x 100; no mide productos conformes.")
+    if not resultado.resultados_coinciden:
+        print("Comparación no válida: hubo errores o los resultados de las modalidades difieren.")
+        return
+    print("Verificación: todos los resultados y detalles coinciden entre las dos modalidades.")
     if resultado.tiempo_hilos_ns == resultado.tiempo_secuencial_ns:
         print("Empate en el tiempo total medido.")
     else:
         mejor = "Hilos" if resultado.tiempo_hilos_ns < resultado.tiempo_secuencial_ns else "Secuencial"
         print(f"Menor tiempo total observado: {mejor}.")
-    print("Medición puntual: incluye gestión de hilos y puede variar, especialmente en tareas pequeñas.")
-    print("Un porcentaje negativo indica más tiempo. Crear más hilos no garantiza acelerar este cálculo.")
+    print("Reducción = (tiempo secuencial - tiempo con hilos) / tiempo secuencial x 100.")
+    print("Un valor negativo indica aumento; N/D indica referencia cero. Dos ceros: empate de 0%.")
+    print("Medición puntual: las tareas pequeñas y la gestión de hilos influyen en el resultado.")
+    print("Las tareas son distintas: sus duraciones individuales no establecen qué hilo es más eficiente.")
 
 
 def mostrar_sincronizacion(resultado: ResultadoSincronizacion) -> None:
