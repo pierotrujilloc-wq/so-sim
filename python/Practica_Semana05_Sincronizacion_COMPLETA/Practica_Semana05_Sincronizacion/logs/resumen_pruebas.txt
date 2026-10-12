@@ -1,0 +1,23 @@
+RESUMEN DE PRUEBAS - SW407 SEMANA 05
+=====================================
+
+Productor-Consumidor
+--------------------
+Corridas correctas : 20/20
+Corridas con error : 0/20
+Criterio            : 0 pérdidas, 0 duplicados, buffer final vacío y capacidad respetada.
+
+Filósofos Comensales
+--------------------
+Corridas correctas : 20/20
+Corridas con error : 0/20
+Criterio            : todos los cocineros completan sus rondas, sin deadlock y sin inanición observada.
+
+Resultado global
+----------------
+APROBADO: 40/40 corridas correctas.
+
+Archivos detallados:
+- productor_consumidor_20_corridas.txt
+- filosofos_20_corridas.txt
+- resumen_pruebas.csv

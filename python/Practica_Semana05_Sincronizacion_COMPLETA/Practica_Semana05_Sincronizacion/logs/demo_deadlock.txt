@@ -1,0 +1,27 @@
+Cocinero-1: tomó U1
+Cocinero-2: tomó U2
+Cocinero-3: tomó U3
+Cocinero-4: tomó U4
+Cocinero-5: tomó U5
+Cocinero-5: intenta U1
+Cocinero-3: intenta U4
+Cocinero-2: intenta U3
+Cocinero-1: intenta U2
+Cocinero-4: intenta U5
+Cocinero-3: BLOQUEADO esperando U4 (timeout de demostración)
+Cocinero-5: BLOQUEADO esperando U1 (timeout de demostración)
+
+===== RESULTADO =====
+Cocineros que no pudieron obtener el segundo utensilio: 2/5
+No se reprodujo el patrón completo en esta corrida.
+
+Spreadsheet runtime warmup failed during python startup
+Traceback (most recent call last):
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/patches/warm_spreadsheet_runtime_on_startup.py", line 26, in warm_spreadsheet_runtime_on_startup
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 785, in warm_spreadsheet_runtime
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 720, in _warm_feature_flows
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/spreadsheet_warmup.py", line 704, in _warm_collaboration_flows
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/generated/interface/models.py", line 32317, in hydrate_crdt_from_proto
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/remote.py", line 749, in __call__
+  File "/tmp/tmp.L2TH2Y5coc/artifact_tool_v2-2.8.22/artifact_tool/rpc/client.py", line 150, in call
+artifact_tool.rpc.client.RemoteError: hydrateCrdtFromProto requires an empty collaborative document.
