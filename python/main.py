@@ -12,7 +12,7 @@ from presentacion import (
     mostrar_comparacion, mostrar_hilos, mostrar_procesos, mostrar_resultado, mostrar_sincronizacion,
 )
 from sincronizacion import ejecutar_productor_consumidor
-from tareas_almacen import TAREAS, seleccionar_tareas
+from tareas_almacen import ESPERA_SERVICIO_SEGUNDOS, TAREAS, seleccionar_tareas
 
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -71,6 +71,7 @@ def menu() -> None:
                 quantum = pedir_entero("Quantum de Round Robin: ", 1)
                 ejecutar_planificacion(procesos, quantum, "todos", es_ejemplo=opcion == "1")
             elif opcion == "4":
+                print(f"Las tareas 5, 6 y 7 simulan consultas externas: {ESPERA_SERVICIO_SEGUNDOS} segundos por consulta.")
                 print("Tareas disponibles para la misma entrega:")
                 for numero, (nombre, _) in enumerate(TAREAS, start=1):
                     print(f"  {numero}. {nombre}")
@@ -125,6 +126,7 @@ def main() -> int:
                 es_ejemplo=args.archivo.resolve() == EJEMPLO,
             )
         elif args.comando == "hilos":
+            print(f"Las consultas externas son simuladas y esperan {ESPERA_SERVICIO_SEGUNDOS} segundos cada una.")
             resultado = demostrar_hilos(seleccionar_tareas(args.tareas))
             mostrar_hilos(resultado)
             if not resultado.resultados_coinciden:

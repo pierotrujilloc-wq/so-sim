@@ -55,8 +55,12 @@ Archivos: `python/tareas_almacen.py`, `python/hilos.py` y `python/presentacion.p
 
 Una entrega se revisa mediante tareas independientes: verificar cantidades,
 revisar vencimientos, preparar etiquetas y detectar productos sin ubicación.
-Cada tarea tiene una función con sus propios ciclos y condiciones. Las cuatro
+Cada revisión tiene una función con sus propios ciclos y condiciones. Las cuatro
 trabajan con la misma entrega de solo lectura y producen resultados separados.
+Además, las tareas 5, 6 y 7 simulan consultas a otra sucursal, al proveedor y al
+sistema de transporte. Cada función llama a `sleep(2)` una vez para representar
+una espera por respuesta externa y devuelve una confirmación simulada. No hace
+conexiones de red. `ESPERA_SERVICIO_SEGUNDOS` permite ajustar esa espera.
 
 Recorrido de la opción 4:
 
@@ -81,8 +85,12 @@ Un error o resultados diferentes invalidan la comparación de rendimiento.
 Los hilos son concurrentes; eso no garantiza paralelismo ni menor tiempo. En la
 instalación habitual de CPython, el GIL limita la ejecución simultánea de código
 Python. Estas tareas cortas pueden terminar antes de que arranque el siguiente
-hilo. No se insertan pausas para forzar un solapamiento. El total con hilos incluye
-creación, registro, coordinación y espera, por lo que puede ser mayor.
+hilo. En las consultas simuladas, `sleep` suspende el hilo que espera y permite
+avanzar a otros. Al elegir `5,6,7`, las esperas suman aproximadamente seis segundos
+en secuencial y se solapan en unos dos segundos con hilos. El total incluye
+creación, registro, coordinación y espera; la reducción esperada ronda el 66.7%,
+con variaciones por la gestión y la carga del equipo. Esta demostración enseña
+a solapar esperas, no a acelerar cálculos de CPU mediante pausas.
 
 Para agregar tareas, escribe una función que reciba `Entrega` y devuelva
 `ResultadoTarea`, y añádela a `TAREAS` en `python/tareas_almacen.py`. El menú,

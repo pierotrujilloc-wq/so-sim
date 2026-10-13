@@ -6,6 +6,7 @@ Cada función recibe Entrega y devuelve ResultadoTarea.
 
 from dataclasses import dataclass
 from datetime import date
+from time import sleep
 from typing import Callable
 
 
@@ -85,6 +86,29 @@ def detectar_productos_sin_ubicacion(entrega: Entrega) -> ResultadoTarea:
     return ResultadoTarea(f"Productos detectados sin ubicación: {len(pendientes)}", tuple(pendientes))
 
 
+# Representa la latencia de un servicio externo; no se hacen conexiones reales.
+# Cada consulta espera una vez por entrega, no una vez por producto.
+ESPERA_SERVICIO_SEGUNDOS = 2
+
+
+def consultar_existencias_sucursal(entrega: Entrega) -> ResultadoTarea:
+    """Simula esperar la respuesta del inventario de otra sucursal."""
+    sleep(ESPERA_SERVICIO_SEGUNDOS)
+    return ResultadoTarea("Consulta a sucursal completada (simulada)", ())
+
+
+def consultar_informacion_proveedor(entrega: Entrega) -> ResultadoTarea:
+    """Simula esperar información del proveedor de la entrega."""
+    sleep(ESPERA_SERVICIO_SEGUNDOS)
+    return ResultadoTarea("Consulta al proveedor completada (simulada)", ())
+
+
+def esperar_confirmacion_transporte(entrega: Entrega) -> ResultadoTarea:
+    """Simula esperar la confirmación del sistema de transporte."""
+    sleep(ESPERA_SERVICIO_SEGUNDOS)
+    return ResultadoTarea("Confirmación de transporte recibida (simulada)", ())
+
+
 Tarea = tuple[str, Callable[[Entrega], ResultadoTarea]]
 
 # El menú y las dos modalidades recorren esta lista, sin un límite de tres.
@@ -93,6 +117,9 @@ TAREAS: list[Tarea] = [
     ("Revisar vencimientos", revisar_vencimientos),
     ("Preparar etiquetas", preparar_etiquetas),
     ("Detectar productos sin ubicación", detectar_productos_sin_ubicacion),
+    ("Consultar existencias en sucursal (simulada)", consultar_existencias_sucursal),
+    ("Consultar información al proveedor (simulada)", consultar_informacion_proveedor),
+    ("Esperar confirmación de transporte (simulada)", esperar_confirmacion_transporte),
 ]
 
 

@@ -60,7 +60,8 @@ class PruebasConcurrencia(unittest.TestCase):
         resultado = self.ejecutar_aislado(
             "import json\nfrom dataclasses import asdict\n"
             "from hilos import demostrar_hilos\n"
-            "print(json.dumps(asdict(demostrar_hilos()), default=str))\n"
+            "from tareas_almacen import TAREAS\n"
+            "print(json.dumps(asdict(demostrar_hilos(TAREAS[:4])), default=str))\n"
         )
         self.assertTrue(resultado["resultados_coinciden"])
         esperados = ["Cantidades verificadas: 4", "Vencimientos revisados: 3",

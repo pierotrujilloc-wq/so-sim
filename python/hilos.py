@@ -81,8 +81,8 @@ def demostrar_hilos(
         hilos.append(hilo)
         hilo.start()
 
-    # Iniciar toda la selección antes de esperar. No se fuerza solapamiento
-    # mediante pausas: una tarea pequeña puede acabar antes de iniciar otra.
+    # Iniciar toda la selección antes de esperar. Las consultas simuladas
+    # pueden solapar sus esperas; una tarea corta puede acabar antes de iniciar otra.
     for hilo in hilos:
         hilo.join()
     tiempo_hilos_ns = perf_counter_ns() - inicio_hilos

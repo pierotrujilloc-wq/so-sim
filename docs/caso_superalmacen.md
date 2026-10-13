@@ -126,6 +126,9 @@ salsa de la clase a funciones propias del almacén.
 | Revisar vencimientos | `revisar_vencimientos` compara fechas con la fecha de revisión. | Vencimientos revisados: 3. |
 | Preparar etiquetas | `preparar_etiquetas` genera texto con nombre y ubicación asignada. | Etiquetas preparadas: 3. |
 | Detectar productos sin ubicación | `detectar_productos_sin_ubicacion` busca ubicaciones vacías. | Productos detectados sin ubicación: 1. |
+| Consultar existencias en sucursal (5) | `consultar_existencias_sucursal` simula esperar una respuesta externa. | Consulta a sucursal completada (simulada). |
+| Consultar información al proveedor (6) | `consultar_informacion_proveedor` simula esperar información. | Consulta al proveedor completada (simulada). |
+| Esperar confirmación de transporte (7) | `esperar_confirmacion_transporte` simula esperar una confirmación. | Confirmación de transporte recibida (simulada). |
 
 La entrega contiene arroz, leche, aceite y detergente. Está definida en
 `ENTREGA_EJEMPLO`, junto con una fecha fija de revisión: **2026-10-10**. Una fecha
@@ -135,7 +138,7 @@ Las ubicaciones vienen asignadas en la entrada; generar una etiqueta no aprueba
 un producto ni autoriza su venta. Ninguna tarea necesita el resultado de otra.
 
 En la opción 4 se eligen números separados por comas (`1,3`), o Enter/`0` para
-todas. La cantidad de hilos corresponde a las tareas seleccionadas: cuatro por
+todas. La cantidad de hilos corresponde a las tareas seleccionadas: siete por
 defecto. Estos datos de mercadería pertenecen al ejemplo de hilos; el CSV de
 planificación conserva sus cuatro columnas originales.
 
@@ -158,7 +161,16 @@ El reloj `perf_counter_ns` mide el tiempo real. Inicio y fin se expresan desde e
 comienzo de **cada modalidad**: ambas tienen su propio origen. En secuencial,
 una tarea empieza después de acabar la anterior. Con hilos puede haber intervalos
 solapados, aunque estas funciones cortas pueden terminar antes de iniciar otra.
-No se añaden pausas para fabricar un resultado más favorable.
+Las tareas 1–4 ejecutan las revisiones sin pausas añadidas. Las tareas 5–7 usan
+`sleep(2)` para representar una espera por respuesta de un servicio externo.
+Se espera una vez por consulta, independientemente de la cantidad de productos;
+las respuestas son fijas y simuladas. No se contacta a ninguna sucursal o servicio.
+
+Al seleccionar `5,6,7`, la modalidad secuencial espera aproximadamente seis
+segundos y la modalidad con hilos unos dos segundos, más su gestión. El reloj
+mide el tiempo realmente transcurrido, incluidas las esperas simuladas. La
+comparación completa tarda unos ocho segundos. Esto permite observar el
+solapamiento de esperas sin cambiar el trabajo de las cuatro revisiones originales.
 
 ```text
 Cumplimiento (%) = Tareas ejecutadas sin error / Tareas seleccionadas × 100

@@ -10,7 +10,7 @@ class PruebasConsola(unittest.TestCase):
     def ejecutar(self, argumentos, entrada=None):
         return subprocess.run(
             [sys.executable, "-X", "utf8", str(RAIZ / "python/main.py"), *argumentos],
-            input=entrada, capture_output=True, text=True, encoding="utf-8", timeout=15,
+            input=entrada, capture_output=True, text=True, encoding="utf-8", timeout=30,
         )
 
     def test_comparacion_con_ejemplo_por_defecto(self):

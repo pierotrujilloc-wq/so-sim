@@ -6,6 +6,7 @@ from io import StringIO
 from pathlib import Path
 import sys
 import unittest
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "python"))
 
@@ -50,7 +51,7 @@ class PruebasTareasAlmacen(unittest.TestCase):
 
     def test_entrega_vacia(self):
         entrega = Entrega(date(2026, 10, 10), ())
-        resultado = demostrar_hilos(entrega=entrega)
+        resultado = demostrar_hilos(TAREAS[:4], entrega=entrega)
         self.assertTrue(resultado.resultados_coinciden)
         for registro in resultado.secuencial:
             self.assertTrue(registro.resultado.resumen.endswith(": 0"))
@@ -60,7 +61,7 @@ class PruebasTareasAlmacen(unittest.TestCase):
         for entrada in ("", "  ", "0", " TODAS "):
             self.assertEqual(seleccionar_tareas(entrada), TAREAS)
         self.assertEqual(seleccionar_tareas("3, 1"), [TAREAS[2], TAREAS[0]])
-        for entrada in ("1,1", "0,1", "5", "-1", "abc", "1,", "1.5"):
+        for entrada in ("1,1", "0,1", str(len(TAREAS) + 1), "-1", "abc", "1,", "1.5"):
             with self.subTest(entrada=entrada), self.assertRaises(ValueError):
                 seleccionar_tareas(entrada)
         with self.assertRaises(ValueError):
@@ -76,7 +77,7 @@ class PruebasTareasAlmacen(unittest.TestCase):
         # La extensión solo registra una función, sin cambiar el ejecutor.
         TAREAS.append(("Contar productos", contar_productos))
         try:
-            resultado = demostrar_hilos(seleccionar_tareas("5"))
+            resultado = demostrar_hilos(seleccionar_tareas(str(len(TAREAS))))
             self.assertTrue(resultado.resultados_coinciden)
             self.assertEqual(resultado.secuencial[0].resultado.resumen, "Productos: 4")
             self.assertEqual(len(entregas_recibidas), 2)
@@ -100,6 +101,18 @@ class PruebasTareasAlmacen(unittest.TestCase):
         self.assertIn("50.00%", salida.getvalue())
         self.assertIn("Comparación no válida", salida.getvalue())
         self.assertNotIn("Menor tiempo total observado", salida.getvalue())
+
+    def test_consultas_simulan_una_espera_por_tarea_y_modalidad(self):
+        with patch("tareas_almacen.sleep") as pausa:
+            resultado = demostrar_hilos(seleccionar_tareas("5,6,7"))
+        self.assertTrue(resultado.resultados_coinciden)
+        self.assertEqual(pausa.call_count, 6)
+        self.assertTrue(all(llamada.args == (2,) for llamada in pausa.call_args_list))
+        self.assertEqual([r.resultado.resumen for r in resultado.secuencial], [
+            "Consulta a sucursal completada (simulada)",
+            "Consulta al proveedor completada (simulada)",
+            "Confirmación de transporte recibida (simulada)",
+        ])
 
     def test_resultados_distintos_invalidan_comparacion(self):
         contador = 0

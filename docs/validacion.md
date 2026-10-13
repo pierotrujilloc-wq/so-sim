@@ -2,7 +2,7 @@
 
 ## Resultado de la comprobación de SuperAlmacén
 
-- Windows con Python 3.13: las 49 pruebas pasaron tras actualizar las tareas
+- Windows con Python 3.13: las 50 pruebas pasaron tras actualizar las tareas
   de la opción 4.
 
 Comprobaciones previas a esta actualización de la opción 4:
@@ -23,7 +23,7 @@ Ejecutar desde la raíz:
 python3 -m unittest discover -s tests -v
 ```
 
-La suite contiene 49 pruebas, algunas con varios escenarios internos.
+La suite contiene 50 pruebas, algunas con varios escenarios internos.
 
 | Área | Evidencia |
 |---|---|
@@ -36,7 +36,8 @@ La suite contiene 49 pruebas, algunas con varios escenarios internos.
 | Entrada | Cabecera exacta, UTF-8 con BOM, columnas extra o faltantes, duplicados y números inválidos. |
 | Hilos | Cuatro tareas distintas, resultados iguales entre modalidades, intervalos válidos y espera de terminación. |
 | Tareas de almacén | Diferencias de cantidades, fechas límite de vencimiento, etiquetas y ubicaciones vacías. |
-| Ampliación y errores | Registro de una quinta tarea, selección parcial, entrada inválida, fallos y diferencias en resultados. |
+| Ampliación y errores | Registro de una tarea adicional, selección parcial, entrada inválida, fallos y diferencias en resultados. |
+| Consultas simuladas | Una espera de dos segundos por consulta y modalidad; resultados iguales y selección de las tareas 5, 6 y 7. |
 | Sincronización | Búfer de capacidad 1, productores y consumidores múltiples, cero elementos y consumidores sobrantes. |
 | Consola | Comando predeterminado, error de archivo y carga manual mediante el menú. |
 | Porcentajes | Eficiencia y espera complementarias, mejora y empeoramiento frente a FCFS, referencia cero y ausencia de FCFS. |

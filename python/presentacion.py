@@ -168,7 +168,8 @@ def mostrar_hilos(resultado: ResultadoHilos) -> None:
     mostrar_tabla_tareas("Modalidad con hilos: tareas de la entrega", resultado.con_hilos)
     print("Inicio y fin se miden desde el comienzo de CADA modalidad; son relojes relativos separados.")
     print("Los intervalos con hilos pueden solaparse, pero tareas pequeñas pueden terminar una tras otra.")
-    print("Son tiempos reales medidos, no pausas simuladas. El total incluye medición y gestión.")
+    print("Son tiempos reales medidos. Las consultas simuladas incluyen una espera por respuesta externa.")
+    print("El total incluye esas esperas, la medición y la gestión de los hilos.")
     print("\n=== Misma entrega: secuencial frente a hilos ===")
     reduccion = reduccion_porcentual(resultado.tiempo_secuencial_ns, resultado.tiempo_hilos_ns)
     filas = []

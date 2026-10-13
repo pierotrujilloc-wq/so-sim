@@ -17,9 +17,12 @@ El contexto completo está en [Caso SuperAlmacén](docs/caso_superalmacen.md).
   (`Duración / Retorno × 100`), porcentaje de espera y reducción de espera y
   respuesta frente a FCFS. Se indican las mejores políticas y los empates.
 - **Opción 4:** elegir tareas para revisar una entrega: cantidades, vencimientos,
-  etiquetas y productos sin ubicación. Enter ejecuta todas; `1,3` selecciona dos.
+  etiquetas y productos sin ubicación (1–4), o consultas simuladas a sucursal,
+  proveedor y transporte (5–7). Enter ejecuta todas; `1,3` selecciona dos.
   Muestra una tabla secuencial y otra con hilos, con resultados, responsable,
   inicio, fin y duración. Verifica resultados iguales y compara tiempos totales.
+  Selecciona `5,6,7` para comparar tres esperas de dos segundos: aproximadamente
+  seis segundos en secuencial y dos con hilos. No hay conexiones externas reales.
 - **Opción 5:** recepción y retirada de cajas de la zona compartida.
 - **Opción 6:** compila y ejecuta el jefe y operario en C mediante `subprocess`;
   muestra los PID, la tabla de cumplimiento y regresa al menú.
